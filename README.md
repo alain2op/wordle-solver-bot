@@ -1,14 +1,33 @@
-# wordle-solver-bot
-This is a wordle-solver-bot which is not perfect, but to use this run "python3 wordle-bot.py" <br />
-And you get a few really good words to attack the wordle puzzle, then the bot asks for a response <br />
-The response is a string of 0s,1s and 2s <br />
-For each letter of the five-lettered word, <br />
-if the letter is not in the word(wordle represents the letter's background in black), add '0' to your string <br />
-If the letter is in the word, but it is in incorrect position(wordle represents the letter's background in yellow), add '1' to the string <br />
-If the letter is in it's correct position(wordle represents the letter's background in green), add '2' to the string <br />
-For example, <br />
-If the wordle's word was CHOIR, and your word was SHARE, then the response should be 02010 <br />
-Do this until you get your word right <br />
+# Wordle Solver Bot
+# Wordle Solver Bot
 
-# There is a mistake I need to fix if there is multiple of the same letters in the word
+This bot helps you find the best words to solve the Wordle puzzle, though it may not be the most efficient one.
 
+## Usage
+
+Run the following command to use the bot:
+
+```bash
+python3 wordle-bot.py
+```
+
+The bot will suggest a few good starting words. You can choose between two strategies: **Explore** and **Exploit**.
+
+- **Explore**: Gather maximum information from each guess.
+- **Exploit**: Make the most likely guess based on the current information.
+
+It's recommended to use the Explore strategy initially and switch to the Exploit strategy when fewer words remain.
+
+## Response Format
+
+After each guess, the bot will ask for feedback in the form of a string of 0s, 1s, and 2s:
+
+- `0`: The letter is not in the word (Wordle shows the letter's background in black).
+- `1`: The letter is in the word but in the wrong position (Wordle shows the letter's background in yellow).
+- `2`: The letter is in the correct position (Wordle shows the letter's background in green).
+
+### Example
+
+If the Wordle word is **CHOIR** and your guess is **SHARE**, the response should be `02010`.
+
+Continue this process until you guess the correct word.
