@@ -1,5 +1,4 @@
 # Wordle Solver Bot
-# Wordle Solver Bot
 
 This bot helps you find the best words to solve the Wordle puzzle, though it may not be the most efficient one.
 
