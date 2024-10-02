@@ -1,18 +1,20 @@
 
-def find_missing_letters(response,word):
+def find_missing_letters(response,word,present_letters):#returns the letters that are not in the word
     indices=[i for i,char in enumerate(response) if char=='0' ]
-    letters=[word[i] for i in indices]
-    return letters
+    missing_letters=[word[i] for i in indices if word[i] not in present_letters]
+    return missing_letters,present_letters
 
-def positioned_letters(response,word):
+def positioned_letters(response,word,present_letters):#returns the letters that are in the word at the correct position
     indices=[i for i,char in enumerate(response) if char=='2']
     positioned_pairs=[(i,word[i]) for i in indices]
-    return positioned_pairs
+    present_letters=[char for i,char in positioned_pairs if char not in present_letters]
+    return positioned_pairs,present_letters
 
-def non_positioned_letters(response,word):
+def non_positioned_letters(response,word,present_letters):#returns the letters that are in the word but not at the correct position
     indices=[i for i,char in enumerate(response) if char=='1']
     non_positioned_pairs=[(i,word[i]) for i in indices]
-    return non_positioned_pairs
+    present_letters+=[char for i,char in non_positioned_pairs if char not in present_letters]
+    return non_positioned_pairs,present_letters
 
 def spit_top_words(word_list,count_list):
     max_word_list=[]
@@ -31,16 +33,10 @@ def spit_top_words(word_list,count_list):
         max_word_list=sorted(max_word_list,key=lambda k:k[1])
     return max_word_list[::-1]
 
-def word_add(nword_list,word,ncount_list):
-    nword_list.append(word)   
-    for letter in word:
-        ncount_list[ord(letter)-ord('a')]+=1
-    return nword_list,count_list
-
-def update_word_list(word_list,chosen_word,response):
-    missing_letters=find_missing_letters(response,chosen_word)
-    positioned_pairs=positioned_letters(response,chosen_word)
-    non_positioned_pairs=non_positioned_letters(response,chosen_word)
+def update_word_list(word_list,chosen_word,response,present_letters):
+    positioned_pairs,present_letters=positioned_letters(response,chosen_word,present_letters)
+    non_positioned_pairs,present_letters=non_positioned_letters(response,chosen_word,present_letters)
+    missing_letters,present_letters=find_missing_letters(response,chosen_word,present_letters)
     nword_list=[]
     ncount_list=[0]*26
     for word in word_list:
@@ -74,18 +70,24 @@ words.close()
 top_words=spit_top_words(possible_words,count_list)
 print(top_words)
 
+present_letters=[]
+
 chosen_word=input("What's the word chosen: ").strip()
 response=input("What's the wordle response: ").strip()
 while(response!="!" and len(possible_words)>1):
-    if len(chosen_word)!=5 and len(response)!=5:
-        print("Error in data provided. Try again or type ! to exit ")
+    if not (chosen_word.isalpha() and len(chosen_word) == 5):
+        print("Error: The chosen word must be exactly 5 letters (a-z). Try again or type ! to exit.")
+    elif not (response.isdigit() and len(response) == 5 and all(char in '012' for char in response)):
+        print("Error: The response must be a 5 character string containing only 0s, 1s, and 2s. Try again or type ! to exit.")
     else:
-        possible_words,count_list=update_word_list(possible_words,chosen_word,response)
+        chosen_word = chosen_word.lower()
+        possible_words,count_list=update_word_list(possible_words,chosen_word,response,present_letters)
         top_words=spit_top_words(possible_words,count_list)
-        print(len(possible_words))
+        print("No of possible words left: ",len(possible_words))
         print(top_words)
-    chosen_word=input("What's the word chosen: ").strip()
-    response=input("What's the wordle response: ").strip()
+    if(len(possible_words)>1):
+        chosen_word=input("What's the word chosen: ").strip()
+        response=input("What's the wordle response: ").strip()
 
 if(len(possible_words)<=1):
     print("I bet you got the word right.")
