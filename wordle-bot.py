@@ -16,7 +16,7 @@ def non_positioned_letters(response,word,present_letters):#returns the letters t
     present_letters+=[char for i,char in non_positioned_pairs if char not in present_letters]
     return non_positioned_pairs,present_letters
 
-def spit_top_words(word_list,count_list):
+def spit_top_words_to_exploit(word_list,count_list):
     max_word_list=[]
     for word in word_list:
         sum=0
@@ -25,6 +25,25 @@ def spit_top_words(word_list,count_list):
             if letter not in used_letters:
                 sum+=count_list[ord(letter)-ord('a')]
                 used_letters.append(letter)
+        if len(max_word_list)<7:
+            max_word_list.append((word,sum))
+        else:
+            if sum>max_word_list[0][1]:
+                max_word_list[0]=(word,sum)
+        max_word_list=sorted(max_word_list,key=lambda k:k[1])
+    return max_word_list[::-1]
+
+def spit_top_words_to_explore(word_list,count_list,unused_letters):
+    max_word_list=[]
+    for word in word_list:
+        sum=0
+        used_letters=[]
+        for letter in word:
+            if letter not in used_letters:
+                sum+=count_list[ord(letter)-ord('a')]
+                used_letters.append(letter)
+                if(letter in unused_letters):
+                    sum+=10000
         if len(max_word_list)<7:
             max_word_list.append((word,sum))
         else:
@@ -59,21 +78,42 @@ def update_word_list(word_list,chosen_word,response,present_letters):
                 ncount_list[ord(letter)-ord('a')]+=1
     return nword_list,ncount_list
 
+
+#main
+
 possible_words=[]
-words=open("wordle-dictionary.txt",'r')
+
+present_letters=[]
+unused_letters=[chr(i) for i in range(ord('a'),ord('z')+1)]
+
+
+answer_words=open("wordle-answer-dictionary.txt",'r')
 count_list=[0]*26
-for word in words:
+for word in answer_words:
     possible_words.append(word.strip())
     for letter in word.strip():
             count_list[ord(letter)-ord('a')]+=1
-words.close()
-top_words=spit_top_words(possible_words,count_list)
-print(top_words)
+answer_words.close()
 
-present_letters=[]
+top_words_to_exploit=spit_top_words_to_exploit(possible_words,count_list)
+print("Top words to exploit:",top_words_to_exploit,'\n')
 
-chosen_word=input("What's the word chosen: ").strip()
+
+
+guess_words=open("wordle-guess-dictionary.txt",'r')
+guess_words_list=[]
+for word in guess_words:
+    guess_words_list.append(word.strip())
+guess_words.close()
+
+top_words_to_explore=spit_top_words_to_explore(guess_words_list,count_list,unused_letters)
+print("Top words to explore:",top_words_to_explore,'\n')
+
+
+
+chosen_word=input("What's the word chosen: ").strip().lower()
 response=input("What's the wordle response: ").strip()
+unused_letters=[char for char in unused_letters if char not in chosen_word]
 while(response!="!" and len(possible_words)>1):
     if not (chosen_word.isalpha() and len(chosen_word) == 5):
         print("Error: The chosen word must be exactly 5 letters (a-z). Try again or type ! to exit.")
@@ -82,12 +122,15 @@ while(response!="!" and len(possible_words)>1):
     else:
         chosen_word = chosen_word.lower()
         possible_words,count_list=update_word_list(possible_words,chosen_word,response,present_letters)
-        top_words=spit_top_words(possible_words,count_list)
-        print("No of possible words left: ",len(possible_words))
-        print(top_words)
+        top_words_to_exploit=spit_top_words_to_exploit(possible_words,count_list)
+        top_words_to_explore=spit_top_words_to_explore(guess_words_list,count_list,unused_letters)
+        print("No of possible words left: ",len(possible_words),'\n')
+        print("Top words to exploit:",top_words_to_exploit,'\n')
+        print("Top words to explore:",top_words_to_explore,'\n')
     if(len(possible_words)>1):
         chosen_word=input("What's the word chosen: ").strip()
         response=input("What's the wordle response: ").strip()
+        unused_letters=[char for char in unused_letters if char not in chosen_word]
 
 if(len(possible_words)<=1):
     print("I bet you got the word right.")
